@@ -1,4 +1,4 @@
-# CityWeatherService: Weather Advisory and Backup Management
+# City Weather Advisory App
 
 ## Overview
 The WeatherApp application provides a real-time weather advisory service to users, with a robust fallback mechanism for offline or error scenarios. The service fetches data from an external API and maintains a local backup for uninterrupted service.
