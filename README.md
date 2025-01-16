@@ -50,18 +50,16 @@ The development process followed an **API-first approach**, ensuring clear commu
 
 ##### Contract Finalization
 
-1. The API contracts were finalized before hand keeping in my mind a robust       response for various invalid scenarios.
+1. The API contracts were finalized before hand keeping in my mind a             robust and consistent response model for all types of responses wether        valid or invalid.  
 2. The success response structure was kept simple and self descriptive so that     it's integration could be quick and can meet the UI requirements easily. 
 3. This approach ensured the API design met all functional requirements and       addressed edge cases before implementation began.
 
 ##### OpenAPI Specification
 
-1. Once the contract was agreed upon, **OpenAPI specifications** were            generated   to define the API structure, including:
+1. Once the contract finalized, **OpenAPI specifications** were created to       define the API structure, including:
       - Endpoint and their use case.
       - Endpoints
       - Sample request and response structures for all possible responses.
-      - Authentication
-      - Error handling
       - Swagger was used to implement the Open API specification.
 2. These specifications acted as a **single source of truth**, enabling teams to develop and test their components independently.
 
@@ -74,7 +72,7 @@ The City Weather Advisory Service is based on **reactive programming paradigm** 
 1. Given the high volume of requests the service needs to process, the           reactive paradigm ensures efficient resource usage and concurrent request     handling. 
 2. The circuit breaker pattern is integrated to enhance fault tolerance by       gracefully managing failures from third-party APIs, ensuring uninterrupted    service availability.
 
-##### Key Workflow:
+##### Key Workflows:
 1. **Data Fetching**:
    - Weather data is fetched reactively from the third-party service.
    - The non-blocking nature of the system allows parallel handling of multiple requests.
