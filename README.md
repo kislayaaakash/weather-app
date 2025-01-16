@@ -9,7 +9,7 @@ The application provides a real-time weather advisory service to users, with a r
 3. **Weather Advice Generation**: Provides actionable advice based on weather conditions.
 4. **Data Backup and Maintenance**: Updates the local backup with the latest weather data to ensure availability.
 
-### Workflow and Design:
+### System Design and work-flow:
 
 #### Online Mode:
 1. Fetches weather data from the external API.
