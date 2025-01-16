@@ -1,0 +1,46 @@
+/* weatherTable.css */
+
+/* Center the table */
+.weather-table {
+    margin: 0 auto;
+    border-collapse: collapse;
+    width: 80%;
+    text-align: center;
+  }
+  
+  /* Style for table header */
+  .weather-table th {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+  }
+  
+  /* Style for table rows */
+  .weather-table td {
+    padding: 10px;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    font-size: 14px;
+  }
+  
+  /* Alternate row colors */
+  .weather-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  .weather-table tr:nth-child(odd) {
+    background-color: #ffffff;
+  }
+  
+  /* Style for the first column (time) */
+  .weather-table td:first-child {
+    font-weight: bold;
+  }
+  
+  /* Add spacing to bottom */
+  .weather-table tr:last-child td {
+    border-bottom: none;
+  }
+  

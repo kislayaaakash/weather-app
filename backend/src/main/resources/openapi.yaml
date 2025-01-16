@@ -1,0 +1,149 @@
+openapi: 3.0.1
+info:
+  title: Weather API
+  description: API to get weather predictions for the next 3 days based on city.
+  version: 1.0.0
+paths:
+  /api/v1/weather/advice:
+    get:
+      summary: Get 3-day weather prediction and corresponding advice for a city
+      description: Fetches weather predictions for the next 3 days for a given city, including temperature, weather status, and advice.
+      tags:
+        - Weather Forecast
+      parameters:
+        - name: city
+          in: query
+          description: The city for which to retrieve the weather forecast.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved weather prediction
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeatherResponse'
+              examples:
+                example-1:
+                  summary: Successful response with weather data
+                  value:
+                    message: success
+                    status: 200
+                    data:
+                      "2025-01-11":
+                        - temperature: 0
+                          weather:
+                            - status: Clouds
+                              description: broken clouds
+                          advice: Cloudy skies. Keep an umbrella handy just in case!
+                          time: "21:00:00"
+                      "2025-01-12":
+                        - temperature: 0
+                          weather:
+                            - status: Clouds
+                              description: broken clouds
+                          advice: Cloudy skies. Keep an umbrella handy just in case!
+                          time: "00:00:00"
+        '404':
+          description: City not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                example-1:
+                  summary: City not found response
+                  value:
+                    message: city not found
+                    status: 404
+                    data: {}
+        '503':
+          description: Service temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableResponse'
+              examples:
+                example-1:
+                  summary: Service unavailable response
+                  value:
+                    message: Service temporarily unavailable.
+                    status: 503
+                    data: {}
+components:
+  schemas:
+    WeatherResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Status message of the response
+          example: success
+        status:
+          type: integer
+          description: HTTP status code
+          example: 200
+        data:
+          type: object
+          description: Weather data for the next 3 days
+          additionalProperties:
+            type: array
+            items:
+              type: object
+              properties:
+                temperature:
+                  type: integer
+                  description: Temperature in Celsius
+                  example: 0
+                weather:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        description: Weather status (e.g., Clouds, Clear)
+                        example: Clouds
+                      description:
+                        type: string
+                        description: Weather description
+                        example: broken clouds
+                advice:
+                  type: string
+                  description: Weather advice
+                  example: Cloudy skies. Keep an umbrella handy just in case!
+                time:
+                  type: string
+                  description: Time of the weather report (in 24-hour format)
+                  example: "21:00:00"
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+          example: city not found
+        status:
+          type: integer
+          description: HTTP status code
+          example: 404
+        data:
+          type: object
+          description: Empty object indicating no additional data
+          additionalProperties: {}
+    ServiceUnavailableResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message when the service is unavailable
+          example: Service temporarily unavailable.
+        status:
+          type: integer
+          description: HTTP status code
+          example: 503
+        data:
+          type: object
+          description: Empty object indicating no additional data
+          additionalProperties: {}
