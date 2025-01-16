@@ -1,9 +1,9 @@
 # City Weather Advisory App
 
 ### Overview
+
 The application provides a real-time weather advisory service to users, with a robust fallback mechanism for offline or error scenarios. The service fetches data from an external API and maintains a local backup for uninterrupted service.
 
----
 
 ### Key Features:
 1. **Real-Time Weather Advisory**: Fetches weather data for cities using an external API.
@@ -41,6 +41,42 @@ Weather Advisory Service:
 Retrieve data from backup:
 
 ![Flow Diagram](https://mermaid.ink/img/pako:eNpNUs93mkAQ_lfm7aEn9YkKEg7pa0zTeGgPTXtoJIeRHWUrsLxl1tao_3sH0KRcmB2-H_Mtc1SZ1aQStXVY5_DjPq1AnufVE6PjFxgOb_vOp9V3YmdoT6CRETbOlrDGbOfrDgV3x2UDmeED_CHknBxoYjRFA7iXF64LAlNdKB_PvepdSz39ouYEi9WDKVho1jM0jMXFaAiOSiu2NTYsdWadbgawI6oh885RxfABNp69o-tnePlf_ps9wUM7vncVYAVU1jKlXf-mjAXYQxddCHhcfaGKHDIJUoteR7omQr03GV3VH1vK8rjIKduB2byZZ9bLTDlKlWO1JQ21ldH7a-sySvqUl-_ZP69-1rr1vBr1t9SipWc4v_BEqlW5-KuBKsmVaLT8v2PbS5WwS0pVIqWmDfqCU5VWZ4GiZ_t0qDKVsPM0UM76ba6SDRaNnHznf29Q9qB869ZYPVtbXimkDVv3tV-Ybm86iEqO6q9Kgnk4moTBOIzGN7NoHIcDdVDJcDKJRlEUB9NoOr-ZRJPp7DxQr51qMIrH4SyOg_l0Ho7jIAzP_wBg2NVQ?type=png)
+---
+
+### Custom Backup Design
+
+This section outlines the design and workflow of the weather backup system, focusing on efficient read and initialization of backup, asynchronous updates, and concurrency handling. The solution ensures quick API responses, thread-safe operations, and the ability to handle concurrent read and write operations seamlessly.
+
+#### Read Workflow
+
+1. **File Read during startup**: 
+   - At the time of program initialization, the backup file is read only          once.
+   - The file contents are deserialized and mapped into an in-memory `Map`        for quick access.
+   - This ensures no read and desirializing operations during runtime,            allowing the service to fetch city weather details directly from             in-memory `Map`.
+
+2. **Concurrent Operations Handling**:
+   - The in-memory `Map` allows fast, thread-safe operations.
+   - Concurrent operations are fully supported, providing the latest weather      data without contention.
+
+#### Update and write workflow
+
+To ensure thread safety and efficient handling of concurrent updates, updates to the backup file are managed through a **queue-based mechanism**. All update requests are queued and processed asynchronously. This ensures:
+
+- **Non-blocking API Responses**: 3rd party API responses are returned         immediately to next component for generating weather advice ,                without waiting for the backup file to be updated. This ensures that         service is asynchronous and quickly provide response to the end user.
+- **Asynchronous Updates**: The update and write process runs as a side        effect, ensuring in-memory data updates and writes to backup files happens   in the background.
+- **Thread Safety**: Only one update thread interacts with the file at a time, avoiding file corruption.
+
+#### Workflow : Update of in-memory map and backup file
+
+1. **Real-Time Updates for In-Memory data**:
+   - The in-memory `Map` is synchronized and updated immediately and made available with latest data.
+   - This ensures subsequent calls to the service fetches the latest data from memory, even if the backup file is still being updated (if 3rd party services are unavailable or service is in offline mode).
+
+2. **Queue-Based Update Requests and Executions**:
+   - Each update request (e.g., a new city weather detail) is added to a thread-safe queue.
+   - Requests are hence, processed sequentially to prevent concurrent writes to the backup file.
+   - When the backup file is free from any current thread operation, the next update in the queue is processed.
+---
 
 ### Service Implementation:
 
