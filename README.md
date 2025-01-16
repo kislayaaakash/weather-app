@@ -16,9 +16,9 @@ The application provides a real-time weather advisory service to users, with a r
 2. If the API returns valid data:
    - Generate and return weather advice. 
    - If city weather details do not exist in the backup, set the `lastUpdated` field with the current UTC time and update the backup with the data.
-   - If the city exists in the backup, generate and return weather advice. Update the backup when:
+   - If the city exists in the backup, generate and return weather advice. Then update the backup if:
      - The difference between the current UTC time and the `lastUpdated` value is greater than 30 minutes.
-     - Check if the first weather entry in the backup is different from the fetched details from the API. If so, update the backup.
+     - The the first weather entry in the backup is different from the fetched details from the API.
      - Before update, set the `lastUpdated` field with the current UTC time.
 3. API failure scenarios:
    - Wrong city input: Return empty data with a corresponding message and status code.
