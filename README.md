@@ -3,6 +3,8 @@
 ### Overview
 The application provides a real-time weather advisory service to users, with a robust fallback mechanism for offline or error scenarios. The service fetches data from an external API and maintains a local backup for uninterrupted service.
 
+---
+
 ### Key Features:
 1. **Real-Time Weather Advisory**: Fetches weather data for cities using an external API.
 2. **Offline Fallback**: Uses backup data when the service is offline or the external API fails.
@@ -62,3 +64,22 @@ The development process followed an **API-first approach**, ensuring clear commu
       - Error handling
       - Swagger was used to implement the Open API specification.
 2. These specifications acted as a **single source of truth**, enabling teams to develop and test their components independently.
+
+#### Integrating Open Weather API
+
+The City Weather Advisory Service is based on **reactive programming paradigm** coupled **circuit breaker design pattern**, for non-blocking and asynchronous execution. This approach ensures high performance, scalability, resilience and fault-tolerant making it an ideal solution for a weather service that can receive multiple concurrent requests.
+
+##### Why a Reactive Approach and Circuit Breaker Pattern?
+
+1. Given the high volume of requests the service needs to process, the           reactive paradigm ensures efficient resource usage and concurrent request     handling. 
+2. The circuit breaker pattern is integrated to enhance fault tolerance by       gracefully managing failures from third-party APIs, ensuring uninterrupted    service availability.
+
+##### Key Workflow:
+1. **Data Fetching**:
+   - Weather data is fetched reactively from the third-party service.
+   - The non-blocking nature of the system allows parallel handling of multiple requests.
+2. **Backup Update**:
+   - Once data is fetched, the system updates the local backup asynchronously as a **side effect**, ensuring that the response time to the user remains unaffected.
+3. **Fault Tolerance**:
+   - In case of third-party failures, the circuit breaker activates and retrieves weather data from the local backup, maintaining service continuity.
+
