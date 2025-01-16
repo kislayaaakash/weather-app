@@ -9,7 +9,7 @@ The application provides a real-time weather advisory service to users, with a r
 3. **Weather Advice Generation**: Provides actionable advice based on weather conditions.
 4. **Data Backup and Maintenance**: Updates the local backup with the latest weather data to ensure availability.
 
-### System Design and work-flow:
+### Service Design and work-flow:
 
 #### Online Mode:
 1. Fetches weather data from the external API.
@@ -20,7 +20,7 @@ The application provides a real-time weather advisory service to users, with a r
      - The difference between the current UTC time and the `lastUpdated` value is greater than 30 minutes.
      - Check if the first weather entry in the backup is different from the fetched details from the API. If so, update the backup.
      - Before update, set the `lastUpdated` field with the current UTC time.
-3. **API failure scenarios:**
+3. API failure scenarios:
    - Wrong city input: Return empty data with a corresponding message and status code.
    - Other issues: Fall back to the backup, generate weather advice, and if not found, return a 503 error with the message: "Service temporarily unavailable."
 
