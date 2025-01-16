@@ -1,7 +1,7 @@
 # City Weather Advisory App
 
 ## Overview
-The WeatherApp application provides a real-time weather advisory service to users, with a robust fallback mechanism for offline or error scenarios. The service fetches data from an external API and maintains a local backup for uninterrupted service.
+The application provides a real-time weather advisory service to users, with a robust fallback mechanism for offline or error scenarios. The service fetches data from an external API and maintains a local backup for uninterrupted service.
 
 ### Key Features:
 1. **Real-Time Weather Advisory**: Fetches weather data for cities using an external API.
@@ -15,11 +15,11 @@ The WeatherApp application provides a real-time weather advisory service to user
 1. Fetches weather data from the external API.
 2. If the API returns valid data:
    - Generate and return weather advice. 
-   - If city weather details do not exist in the backup, update the backup with the data and append the `lastUpdated` field with the current UTC time.
+   - If city weather details do not exist in the backup, set the `lastUpdated` field with the current UTC time and update the backup with the data.
    - If the city exists in the backup, generate and return weather advice. Update the backup when:
      - The difference between the current UTC time and the `lastUpdated` value is greater than 30 minutes.
      - Check if the first weather entry in the backup is different from the fetched details from the API. If so, update the backup.
-     - Before updates, set the `lastUpdated` field with the current UTC time.
+     - Before update, set the `lastUpdated` field with the current UTC time.
 3. **API failure scenarios:**
    - Wrong city input: Return empty data with a corresponding message and status code.
    - Other issues: Fall back to the backup, generate weather advice, and if not found, return a 503 error with the message: "Service temporarily unavailable."
