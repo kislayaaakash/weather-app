@@ -22,10 +22,11 @@ The application provides a real-time weather advisory service to users, with a r
      - Before update, set the `lastUpdated` field with the current UTC time.
 3. API failure scenarios:
    - Wrong city input: Return empty data with a corresponding message and status code.
-   - Other issues: Fall back to the backup, generate weather advice, and if not found, return a 503 error with the message: "Service temporarily unavailable."
+   - Other issues: Fall back to the backup, generate weather advice, and if not found, return 503 error with the message: "Service temporarily unavailable."
 
 #### Offline Mode:
 1. Directly retrieve weather details from the backup, generate weather advice, and return.
+2. If unavailable return 503 error with the message: "Service temporarily unavailable."
 
 ### Flow Diagram:
 This diagram represents the flow of the Weather Advisory Service:
