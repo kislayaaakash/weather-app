@@ -1,6 +1,6 @@
 # City Weather Advisory App
 
-## Overview
+### Overview
 The application provides a real-time weather advisory service to users, with a robust fallback mechanism for offline or error scenarios. The service fetches data from an external API and maintains a local backup for uninterrupted service.
 
 ### Key Features:
@@ -9,7 +9,9 @@ The application provides a real-time weather advisory service to users, with a r
 3. **Weather Advice Generation**: Provides actionable advice based on weather conditions.
 4. **Data Backup and Maintenance**: Updates the local backup with the latest weather data to ensure availability.
 
-### Service Design and work-flow:
+---
+
+### Service Architecture and work-flow:
 
 #### Online Mode:
 1. Fetches weather data from the external API.
@@ -22,10 +24,11 @@ The application provides a real-time weather advisory service to users, with a r
      - Before update, set the `lastUpdated` field with the current UTC time.
 3. API failure scenarios:
    - Wrong city input: Return empty data with a corresponding message and status code.
-   - Other issues: Fall back to the backup, generate weather advice, and if not found, return 503 error with the message: "Service temporarily unavailable."
+   - Other issues: Fall back to the backup, retrieve data from backup and filter out the past records, generate weather advice, then update the backup file if data has been filtered. If       not found, return 503 error with the message: "Service temporarily unavailable."
 
 #### Offline Mode:
-1. Directly retrieve weather details from the backup, generate weather advice, and return.
+1. Directly retrieve weather details from the backup, retrieve data from backup and filter out the past records, generate weather advice, then update the backup file if data has been 
+   filtered. 
 2. If unavailable return 503 error with the message: "Service temporarily unavailable."
 
 #### Flow Diagram:
@@ -35,6 +38,27 @@ Weather Advisory Service:
 
 Retrieve data from backup:
 
-![Flow Diagram](https://mermaid.ink/img/pako:eNpNUk1z2jAQ_Ss7OvQEDBgTwId2mqRpOLSHpj00OIdFWmMV2_LIK1Jq-O9dG0jri9fr97FvpVZpZ0glauuxzuH7fVqBPM_rJ0bPLzAcvj93Pq6_EXtLewKDjJB5V8IG9S7UPQpu21UD2vIBXgk5Jw-GGG3RAO7lhZuCwFYXyofTWfW2ox5_UnOEu_WDLVhoLjA0jMXFaAieSie2NTYstXbeNAPYEdWgg_dUMbyDLHDwdP0NL__Lf3VHeOjGD74CrIDKWqZ0m1-kWYBn6F0fAh7Xn6kij0yCNKLXk66J0Oytpqv6Y0dZtTonvQObvZlrF2SmHKXKsdqSkbApr_5F_bT-UZvO4qp7XgpkVkK_Ws67SlZBpl_BxU4NVEm-RGvkuNqulyphl5SqREpDGYaCU5VWJ4FiYPd0qLRK2AcaKO_CNldJhkUjX6H3v7cox16-dWusnp0rrxQylp3_cr4f_TXpISpp1W-VTG6Wo_Esmsfz2TKO45vZQB1UMoyW0Wgxmc7H8zgaT2bx9DRQf3rRaDQZz8bxIoriqZAmi_j0F66szuY?type=png)
+![Flow Diagram](https://mermaid.ink/img/pako:eNpNUs93mkAQ_lfm7aEn9YkKEg7pa0zTeGgPTXtoJIeRHWUrsLxl1tao_3sH0KRcmB2-H_Mtc1SZ1aQStXVY5_DjPq1AnufVE6PjFxgOb_vOp9V3YmdoT6CRETbOlrDGbOfrDgV3x2UDmeED_CHknBxoYjRFA7iXF64LAlNdKB_PvepdSz39ouYEi9WDKVho1jM0jMXFaAiOSiu2NTYsdWadbgawI6oh885RxfABNp69o-tnePlf_ps9wUM7vncVYAVU1jKlXf-mjAXYQxddCHhcfaGKHDIJUoteR7omQr03GV3VH1vK8rjIKduB2byZZ9bLTDlKlWO1JQ21ldH7a-sySvqUl-_ZP69-1rr1vBr1t9SipWc4v_BEqlW5-KuBKsmVaLT8v2PbS5WwS0pVIqWmDfqCU5VWZ4GiZ_t0qDKVsPM0UM76ba6SDRaNnHznf29Q9qB869ZYPVtbXimkDVv3tV-Ybm86iEqO6q9Kgnk4moTBOIzGN7NoHIcDdVDJcDKJRlEUB9NoOr-ZRJPp7DxQr51qMIrH4SyOg_l0Ho7jIAzP_wBg2NVQ?type=png)
 
 ### Service Implementation:
+
+#### API-First Approach
+
+The development process followed an **API-first approach**, ensuring clear communication and alignment between stakeholders and developers.
+
+##### Contract Finalization
+
+1. The API contracts were finalized before hand keeping in my mind a robust       response for various invalid scenarios.
+2. The success response structure was kept simple and self descriptive so that     it's integration could be quick and can meet the UI requirements easily. 
+3. This approach ensured the API design met all functional requirements and       addressed edge cases before implementation began.
+
+##### OpenAPI Specification
+
+1. Once the contract was agreed upon, **OpenAPI specifications** were            generated   to define the API structure, including:
+      - Endpoint and their use case.
+      - Endpoints
+      - Sample request and response structures for all possible responses.
+      - Authentication
+      - Error handling
+      - Swagger was used to implement the Open API specification.
+2. These specifications acted as a **single source of truth**, enabling teams to develop and test their components independently.
