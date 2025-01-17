@@ -178,6 +178,11 @@ The combination of SLF4J with Logback along with ELK Stack provides a comprehens
 **Dependency Inversion Principle:**
 - The constructor of `CityWeatherService` takes `ExternalAPIManager` and `FileManager` as dependencies, which are provided at runtime, decoupling the core logic from specific implementations.
 
+#### Adherence to the DRY Principle
+
+**Reusable External API Calls:**  
+The `fetchData` method in `ExternalAPIManager` follows the DRY principle by providing a generic mechanism to perform GET calls against any API endpoint. Instead of writing duplicate logic for each API interaction, this single method handles the URL building, query parameter handling, response mapping, and error handling. As a result, the same reusable code can be applied across multiple services or API integrations, reducing redundancy and improving maintainability.
+
 #### 12 Factor App Guidelines in Practice
 
 **Config Through Environment Variables:**
