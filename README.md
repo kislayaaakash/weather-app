@@ -116,4 +116,48 @@ The City Weather Advisory Service is based on **reactive programming paradigm** 
    - Once data is fetched, the system updates the local backup asynchronously as a **side effect**, ensuring that the response time to the user remains unaffected.
 3. **Fault Tolerance**:
    - In case of third-party failures, the circuit breaker activates and retrieves weather data from the local backup, maintaining service continuity.
+ 
+---
+### UI Design and workflow
+
+#### Overview
+This section outlines the proposed development of a mobile-first weather application using React and Bootstrap. The app is intended to fetch weather data for a city entered by the user and provide a detailed weather forecast and a coressponding advice. The design approach prioritizes responsiveness, modularity, and effective state management to ensure scalability and maintainability.
+
+#### Features
+ 1. **Mobile-First Design**
+    - The application is designed with a mobile-first approach to ensure usability on smaller screens.
+    - Components and layouts will adapt seamlessly to larger screens to enhance user experience.
+
+ 2. **Modular Components**
+    - The app is built using independent, reusable components.
+    - Functional components like `SearchBar`, `WeatherTable`, `Header`, and `Footer` will simplify maintenance and allow for future enhancements.
+
+3. **State Management**
+    - React Hooks were used to manage states effectively.
+    - State updates triggered re-renders, ensuring data consistency across       the app.
+
+4. **Error Handling**
+      - The app implements robust error handling mechanisms:
+          - Display appropriate error messages for API failures.
+          - Handle invalid or empty user inputs gracefully.
+
+5. **API Integration**
+    - The app is integrated with a backend API to fetch weather data.
+    - The UI is designed to dynamically render weather data fetched from the API.
+    - Fallback messages will be displayed to handle scenarios where the API is unreachable.
+
+#### User Journey
+1. **Search for Weather**
+   - Users will input a city name in the search bar.
+   - Clicking the "Search" button will trigger an API call.
+
+2. **Data Display**
+   - On successful response, weather data will be displayed in a structured table.
+   - On failure, appropriate error messages will be shown to the user.
+
+3. **Navigation**
+   - A "Back to Top" link will allow users to quickly navigate to the search bar.
+
+---
+
 
