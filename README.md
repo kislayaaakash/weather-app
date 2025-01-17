@@ -166,30 +166,27 @@ The combination of SLF4J with Logback along with ELK Stack provides a comprehens
 
 #### Adherence to SOLID Principles
 
-**Single Responsibility Principle:**
-- `CityWeatherService` focuses solely on fetching and preparing weather data, delegating external calls and file operations to dedicated utilities like `ExternalAPIManager` and `FileManager`.
+1. **Single Responsibility Principle:**
+    - `CityWeatherService` focuses solely on fetching and preparing weather data, delegating external calls and file operations to dedicated utilities like `ExternalAPIManager` and `FileManager`.
 
-**Open/Closed Principle:**
-- The code uses interfaces (`ICityWeatherService`) and abstractions, allowing future implementations of `ICityWeatherService` without modifying existing code.
+2. **Open/Closed Principle:**
+    - The code uses interfaces (`ICityWeatherService`) and abstractions, allowing future implementations of `ICityWeatherService` without modifying existing code.
 
-**Liskov Substitution Principle:**
-- Code written against the `ICityWeatherService` interface can easily swap implementations without altering dependent logic.
+3. **Liskov Substitution Principle:**
+    - Code written against the `ICityWeatherService` interface can easily swap implementations without altering dependent logic.
 
-**Dependency Inversion Principle:**
-- The constructor of `CityWeatherService` takes `ExternalAPIManager` and `FileManager` as dependencies, which are provided at runtime, decoupling the core logic from specific implementations.
+4. **Dependency Inversion Principle:**
+    - The constructor of `CityWeatherService` takes `ExternalAPIManager` and `FileManager` as dependencies, which are provided at runtime, decoupling the core logic from specific implementations.
 
 #### Adherence to the DRY Principle
 
-**Reusable External API Calls:**  
-The `fetchData` method in `ExternalAPIManager` follows the DRY principle by providing a generic mechanism to perform GET calls against any API endpoint. Instead of writing duplicate logic for each API interaction, this single method handles the URL building, query parameter handling, response mapping, and error handling. As a result, the same reusable code can be applied across multiple services or API integrations, reducing redundancy and improving maintainability.
+**Reusable External API Calls:**  The `fetchData` method in `ExternalAPIManager` follows the DRY principle by providing a generic mechanism to perform GET calls against any API endpoint. Instead of writing duplicate logic for each API interaction, this single method handles the URL building, query parameter handling, response mapping, and error handling. As a result, the same reusable code can be applied across multiple services or API integrations, reducing redundancy and improving maintainability.
 
 #### 12 Factor App Guidelines in Practice
 
-**Config Through Environment Variables:**
-- API and service realted configurations are externalized using `@Value` annotations to inject environment-specific variables, adhering to the configuration as code principle.
+**Config Through Environment Variables:** API and service realted configurations are externalized using `@Value` annotations to inject environment-specific variables, adhering to the configuration as code principle.
 
-**Single Codebase for All Environments:**
-- All code is maintained in a single Git repository and is used consistently across development, staging, and production environments, ensuring uniformity and simplicity in deployments.
+**Single Codebase for All Environments:** All code is maintained in a single Git repository and is used consistently across development, staging, and production environments, ensuring uniformity and simplicity in deployments.
 
 
 
