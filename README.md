@@ -10,7 +10,7 @@ The application provides a real-time weather advisory service to users, with a r
 2. **Offline Fallback**: Uses backup data when the service is offline or the external API fails.
 3. **Weather Advice Generation**: Provides actionable advice based on weather conditions.
 4. **Data Backup and Maintenance**: Updates the local backup with the latest weather data to ensure availability.
-
+5. **Interactive UI**: The weather data is displayed in a tabular format, organized in ascending order by date, with corresponding advice provided for each entry.
 ---
 
 ### Service Architecture and work-flow:
