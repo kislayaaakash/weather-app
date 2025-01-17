@@ -53,7 +53,7 @@ This section outlines the design and workflow of the weather backup system, focu
 1. **File Read during startup**: 
    - At the time of program initialization, the backup file is read only          once.
    - The file contents are deserialized and mapped into an in-memory `Map`        for quick access.
-   - This ensures no read and desirializing operations during runtime,            allowing the service to fetch city weather details directly from             in-memory `Map`.
+   - This ensures no read and deserializing operations during runtime,            allowing the service to fetch city weather details directly from             in-memory `Map`.
 
 2. **Concurrent Operations Handling**:
    - The in-memory `Map` allows fast, thread-safe operations.
@@ -87,7 +87,7 @@ The development process followed an **API-first approach**, ensuring clear commu
 
 ##### Contract Finalization
 
-1. The API contracts were finalized before hand keeping in my mind a             robust and consistent response model for all types of responses wether        valid or invalid.  
+1. The API contracts were finalized before hand keeping in my mind a             robust and consistent response model for all types of responses whether        valid or invalid.  
 2. The success response structure was kept simple and self descriptive so that     it's integration could be quick and can meet the UI requirements easily. 
 3. This approach ensured the API design met all functional requirements and       addressed edge cases before implementation began.
 
@@ -277,6 +277,3 @@ The CI/CD pipeline for the Weather App ensures secure, automated deployment of b
 5. **Deployment:**
    - Use Docker Compose to deploy both the frontend and backend containers:
 ---
-
-
-
