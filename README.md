@@ -41,7 +41,8 @@ The application provides a real-time weather advisory service to users, with a r
 1. Directly retrieve weather details from the backup, retrieve data from backup and filter out the past records, generate weather advice, then update the backup file if data has been 
    filtered. 
 2. If unavailable return 503 error with the message: "Service temporarily unavailable."
----
+
+##
 
 ### Custom Backup Design
 
@@ -99,9 +100,11 @@ The development process followed an **API-first approach**, ensuring clear commu
       - Swagger was used to implement the Open API specification.
 2. These specifications acted as a **single source of truth**, enabling teams to develop and test their components independently.
 
+##
+
 #### Integrating Open Weather API
 
-The City Weather Advisory Service is based on **reactive programming paradigm** coupled **circuit breaker design pattern**, for non-blocking and asynchronous execution. This approach ensures high performance, scalability, resilience and fault-tolerant making it an ideal solution for a weather service that can receive multiple concurrent requests.
+The City Weather Advisory Service is based on **reactive programming paradigm** along with **circuit breaker design pattern**, for non-blocking and asynchronous execution. This approach ensures high performance, scalability, resilience and fault-tolerant making it an ideal solution for a weather service that can receive multiple concurrent requests.
 
 ##### Why a Reactive Approach and Circuit Breaker Pattern?
 
@@ -116,7 +119,88 @@ The City Weather Advisory Service is based on **reactive programming paradigm** 
    - Once data is fetched, the system updates the local backup asynchronously as a **side effect**, ensuring that the response time to the user remains unaffected.
 3. **Fault Tolerance**:
    - In case of third-party failures, the circuit breaker activates and retrieves weather data from the local backup, maintaining service continuity.
- 
+
+##
+### Logging and Monitoring in the Weather Application
+
+#### Logging Setup
+
+The weather application uses **SLF4J (Simple Logging Facade for Java)** for logging. SLF4J provides a simple abstraction that enables developers to integrate their code with various logging frameworks. In this application, **Logback** is used as the underlying logging implementation.
+
+#### Why Logback 
+
+- **Performance and Reliability:**
+     Logback is designed for high-performance logging, ensuring that log operations do not impede application performance. It handles large volumes of logs efficiently, making it suitable for a production-grade weather service.
+
+- **Flexible Configuration:** Logback’s configuration allows for fine-grained control over logging output. This includes adjusting log levels (INFO, WARN, ERROR, etc.), setting output formats, and choosing log destinations.
+
+- **Advanced Logging Options:** The application’s logging configuration supports rolling file appenders to manage log files over time, ensuring that logs do not grow indefinitely. This helps maintain system stability and makes it easier to archive or delete older logs.
+
+- **Structured Logging for Insights:** By including structured data (like city names, timestamps, and error codes) in the logs, developers and operators can quickly pinpoint issues, analyze trends, and understand the application’s state at any given time.
+
+#### Monitoring Integration
+
+To monitor the application’s logs, a centralized monitoring stack is configured. The **ELK Stack (Elasticsearch, Logstash, and Kibana)** provides a robust environment for log aggregation, searching, visualization, and alerting.
+
+#### Use case in the application:
+
+- **Centralized Log Management:**  
+  By consolidating logs into a single platform, developers can easily query logs from multiple instances of the application.
+
+- **Real-Time Visibility:**  
+  Kibana dashboards offer live insights into the application’s behavior, helping to detect anomalies and address potential problems before they escalate.
+
+- **Proactive Alerts:**  
+  Monitoring rules and alerts ensure that critical events—such as API failures or unusual response times—are brought to attention immediately.
+
+- **Enhanced Troubleshooting:**  
+  With a structured log environment, identifying root causes of errors becomes faster and more efficient, reducing downtime and improving overall reliability.
+
+#### Summary
+
+The combination of SLF4J with Logback along with ELK Stack provides a comprehensive logging and monitoring solution. This approach helps maintain system stability, ensures quick troubleshooting, and delivers valuable insights into the health and performance of the weather application.
+
+##
+
+### Code developemnt and practices
+
+#### Adherence to SOLID Principles
+
+**Single Responsibility Principle:**
+- `CityWeatherService` focuses solely on fetching and preparing weather data, delegating external calls and file operations to dedicated utilities like `ExternalAPIManager` and `FileManager`.
+
+**Open/Closed Principle:**
+- The code uses interfaces (`ICityWeatherService`) and abstractions, allowing future implementations of `ICityWeatherService` without modifying existing code.
+
+**Liskov Substitution Principle:**
+- Code written against the `ICityWeatherService` interface can easily swap implementations without altering dependent logic.
+
+**Dependency Inversion Principle:**
+- The constructor of `CityWeatherService` takes `ExternalAPIManager` and `FileManager` as dependencies, which are provided at runtime, decoupling the core logic from specific implementations.
+
+#### 12 Factor App Guidelines in Practice
+
+**Config Through Environment Variables:**
+- API and service realted configurations are externalized using `@Value` annotations to inject environment-specific variables, adhering to the configuration as code principle.
+
+**Single Codebase for All Environments:**
+- All code is maintained in a single Git repository and is used consistently across development, staging, and production environments, ensuring uniformity and simplicity in deployments.
+
+
+
+#### Application of Design Patterns
+
+**Factory Pattern:**
+    - `FileManager` and `ExternalAPIManager` act as providers for different types of resources and utilities, abstracting the instantiation logic.
+
+**Template Method:**
+ The `getWeatherAdvice` method outlines the high-level process of retrieving weather data. It relies on the lower-level methods (`getCityWeatherDetails`, `generateWeatherAdvice`) to handle specific steps, following a defined structure while allowing flexibility in detail handling.
+
+**Decorator/Adapter Patterns:**
+ The `WeatherAdviceManager` and `DateTimeManager` utilities act as adapters, transforming raw API data and timestamps into usable formats without altering the underlying source.
+
+**Strategy Pattern:** Different advice generation strategies could be added by modifying the `generateWeatherAdvice` method. The current implementation shows how specific logic is encapsulated, making it easier to introduce new advice strategies in the future.
+
 ---
 ### UI Design and workflow
 
@@ -159,5 +243,40 @@ This section outlines the proposed development of a mobile-first weather applica
    - A "Back to Top" link will allow users to quickly navigate to the search bar.
 
 ---
+
+### CI/CD Design
+
+#### Overview
+The CI/CD pipeline for the Weather App ensures secure, automated deployment of both the frontend (FE) and backend (BE) applications. Docker containers are utilized for consistent environments, and Jenkins is leveraged for pipeline automation.
+
+#### Design Goals
+1. **Secure API Key Management:**
+   - Backend applications receive API keys from Jenkins as environment variables during the pipeline execution.
+   - This ensures that sensitive information is not hardcoded or exposed in the source code.
+
+2. **Dockerized Applications:**
+   - Both frontend and backend are containerized for consistency across development, testing, and production environments.
+   - Docker Compose is used to deploy and manage the containers together, ensuring seamless communication.
+
+3. **Automated Pipeline Workflow:**
+   - Jenkins pipeline automates the process of building, testing, and deploying the applications.
+
+#### CI/CD Pipeline Steps
+1. **Code Checkout:**
+   - Source code is pulled from the Git repository.
+
+2. **Build:**
+   - Docker images are built for both the frontend and backend applications.
+
+3. **Environment Variable Injection:**
+   - Jenkins injects API keys as environment variables to the backend container.
+
+4. **Unit Test Execution:**
+   - Unit tests for both the frontend and backend are executed within their respective Docker containers.
+
+5. **Deployment:**
+   - Use Docker Compose to deploy both the frontend and backend containers:
+---
+
 
 
