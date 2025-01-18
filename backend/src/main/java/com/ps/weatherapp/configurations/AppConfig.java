@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Collections;
 import java.util.Map;
 
 @Configuration
@@ -22,8 +23,7 @@ public class AppConfig {
 
     @Bean
     public Map<String, CityWeatherDetails> weatherBackUpData(FileManager<CityWeatherDetails> fileManager, @Value("${service.cacheFileName}") String fileName) {
-        return fileManager
-            .loadDataFromFile(fileName, new TypeReference<>() {
-            });
+        Map<String, CityWeatherDetails> dataMap = fileManager.loadDataFromFile(fileName, new TypeReference<>() {});
+        return Collections.synchronizedMap(dataMap);  // Wrap the map to make it thread-safe
     }
 }
