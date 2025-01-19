@@ -29,6 +29,7 @@ public class AppConfig {
             return Collections.synchronizedMap(dataMap);  // Wrap the map to make it thread-safe
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            logger.error(e.getMessage());
             return Collections.emptyMap();
         }
     }
