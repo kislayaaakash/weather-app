@@ -22,8 +22,14 @@ public class AppConfig {
     }
 
     @Bean
-    public Map<String, CityWeatherDetails> weatherBackUpData(FileManager<CityWeatherDetails> fileManager) {
-        Map<String, CityWeatherDetails> dataMap = fileManager.loadDataFromFile("weatherCache.json", new TypeReference<>() {});
-        return Collections.synchronizedMap(dataMap);  // Wrap the map to make it thread-safe
+    public Map<String, CityWeatherDetails> weatherBackUpData(FileManager<CityWeatherDetails> fileManager, @Value("${service.cacheFileName}") String fileName) {
+        try {
+            Map<String, CityWeatherDetails> dataMap = fileManager.loadDataFromFile(fileName, new TypeReference<>() {
+            });
+            return Collections.synchronizedMap(dataMap);  // Wrap the map to make it thread-safe
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return Collections.emptyMap();
+        }
     }
 }
