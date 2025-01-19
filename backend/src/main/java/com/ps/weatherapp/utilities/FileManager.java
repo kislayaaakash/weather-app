@@ -23,9 +23,6 @@ public class FileManager<T> {
     private final ObjectMapper objectMapper;
     private static final Logger logger = LoggerFactory.getLogger(FileManager.class);
 
-    @Value("${service.cacheFileName}")
-    private String filePath;
-
     public FileManager() {
         this.objectMapper = new ObjectMapper();
     }
