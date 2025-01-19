@@ -12,7 +12,7 @@ import java.util.LinkedHashMap;
 
 @RestController
 @RequestMapping("/api/v1/weather")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*")
 public class WeatherController {
 
     private final CityWeatherService weatherService;

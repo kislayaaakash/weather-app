@@ -128,8 +128,7 @@ public class CityWeatherService implements ICityWeatherService {
 
     private void updateWeatherBackUpFile(String city, CityWeatherDetails cityWeatherDetails) {
         weatherBackUpData.put(city, cityWeatherDetails);
-        fileManager.saveDataToFile(fileName, weatherBackUpData);
-        logger.info(AppConstants.CITY_WEATHER_BACKUP_DATA_FILE_UPDATED, city);
+        fileManager.saveDataToFile(fileName, weatherBackUpData, city);
     }
 
     private Map<String, Object> createQueryParams(String city) {

@@ -2,8 +2,10 @@ package com.ps.weatherapp.utilities;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.ps.weatherapp.configurations.AppConstants;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -20,6 +22,9 @@ import java.util.Map;
 public class FileManager<T> {
     private final ObjectMapper objectMapper;
     private static final Logger logger = LoggerFactory.getLogger(FileManager.class);
+
+    @Value("${service.cacheFileName}")
+    private String filePath;
 
     public FileManager() {
         this.objectMapper = new ObjectMapper();
@@ -46,15 +51,17 @@ public class FileManager<T> {
     }
 
     // Save the cache to a file
-    public void saveDataToFile(String fileName, Map<String, T> cache) {
+    public void saveDataToFile(String fileName, Map<String, T> cache, String city) {
         try {
             String json = serializeData(cache);
             if (json != null) {
                 File file = new File(fileName);
                 if (!file.exists()) {
                     file.createNewFile();
+                    logger.info("file created: {}", fileName);
                 }
                 Files.write(Paths.get(fileName), json.getBytes());
+                logger.info(AppConstants.CITY_WEATHER_BACKUP_DATA_FILE_UPDATED, city);
             }
         } catch (IOException e) {
             logger.error("Error saving cache to file: {}", e.getMessage());
@@ -69,11 +76,11 @@ public class FileManager<T> {
                 String json = new String(Files.readAllBytes(Paths.get(fileName)));
                 return deserializeData(json, typeReference);
             } else {
-                logger.info("BackUp file not found.");
+                logger.error("BackUp file not found.");
                 return new LinkedHashMap<>();
             }
         } catch (IOException e) {
-            logger.warn("Error loading cache from file: {}", e.getMessage());
+            logger.error("Error loading cache from file: {}", e.getMessage());
             return new LinkedHashMap<>();
         }
     }
