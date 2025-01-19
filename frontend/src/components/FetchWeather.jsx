@@ -1,9 +1,9 @@
-// src/components/FetchWeather.js
 const fetchWeatherDetails = async (city) => {
+  const apiUrl =
+    process.env.REACT_APP_API_URL || "http://localhost:8080/api/v1";
+
   try {
-    const response = await fetch(
-      `http://localhost:8080/api/v1/weather/advice?city=${city}`
-    );
+    const response = await fetch(`${apiUrl}/weather/advice?city=${city}`);
     const result = await response.json();
 
     if (response.status === 200) {
