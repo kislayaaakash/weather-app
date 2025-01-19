@@ -5,7 +5,7 @@ FROM openjdk:21
 WORKDIR /app
 
 # Copy the Spring Boot JAR to the container
-COPY target/weatherapp-0.0.1-SNAPSHOT.jar /app/weatherapp.jar
+COPY target/weather-app-be.jar /app/weatherapp.jar
 
 # Copy the initialization script to the container
 COPY init.sh /app/init.sh
