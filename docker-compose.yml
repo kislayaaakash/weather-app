@@ -1,0 +1,28 @@
+version: "3.8"
+services:
+  backend:
+    image: app-be-001:latest # backend image
+    container_name: spring-boot-app
+    ports:
+      - "8080:8080" # Map backend container port to host port 8080
+    volumes:
+      - weather-cache-volume:/app
+    networks:
+      - weather-app-network # Add service to custom network
+
+  frontend:
+    image: app-fe-001:latest # frontend image (React)
+    container_name: react-app
+    ports:
+      - "3000:80" # Map React app container port 80 to host port 3000
+    depends_on:
+      - backend # Ensure the backend starts before the frontend
+    networks:
+      - weather-app-network # Add service to custom network
+
+volumes:
+  weather-cache-volume: # Volume for backend data persistence
+
+networks:
+  weather-app-network:
+    driver: bridge # Explicitly defining a custom bridge network
