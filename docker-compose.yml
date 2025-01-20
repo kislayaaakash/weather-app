@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   backend:
-    image: ${BACKEND_IMAGE} # backend image
+    image: app-be-002 # backend image
     container_name: spring-boot-app
     ports:
       - "8080:8080" # Map backend container port to host port 8080
@@ -11,7 +11,7 @@ services:
       - weather-app-network # Add service to custom network
 
   frontend:
-    image: ${FRONTEND_IMAGE} # frontend image (React)
+    image: app-fe-002 # frontend image (React)
     container_name: react-app
     ports:
       - "3000:80" # Map React app container port 80 to host port 3000
