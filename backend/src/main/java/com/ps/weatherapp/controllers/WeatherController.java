@@ -1,6 +1,7 @@
 package com.ps.weatherapp.controllers;
 
 import com.ps.weatherapp.configurations.AppConstants;
+import com.ps.weatherapp.interfaces.ICityWeatherService;
 import com.ps.weatherapp.models.*;
 import com.ps.weatherapp.services.CityWeatherService;
 import org.springframework.http.HttpStatus;
@@ -15,9 +16,9 @@ import java.util.LinkedHashMap;
 @CrossOrigin(origins = "*")
 public class WeatherController {
 
-    private final CityWeatherService weatherService;
+    private final ICityWeatherService weatherService;
 
-    public WeatherController(CityWeatherService weatherService) {
+    public WeatherController(ICityWeatherService weatherService) {
         this.weatherService = weatherService;
     }
 
