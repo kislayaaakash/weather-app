@@ -8,13 +8,13 @@ WORKDIR /app
 COPY target/weather-app-be.jar /app/weatherapp.jar
 
 # Copy the initialization script to the container
-COPY initial.sh /app/initial.sh
+COPY intial.sh /app/intial.sh
 
 # Make the initialization script executable
-RUN chmod +x /app/initial.sh
+RUN chmod +x /app/intial.sh
 
 # Expose the application's port (e.g., 8080)
 EXPOSE 8080
 
 # Start the initialization script on container start
-ENTRYPOINT ["/bin/bash", "/app/initial.sh"]
+ENTRYPOINT ["/bin/bash", "/app/intial.sh"]
