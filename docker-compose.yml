@@ -10,16 +10,6 @@ services:
     networks:
       - weather-app-network # Add service to custom network
 
-  frontend:
-    image: app-fe-002 # frontend image (React)
-    container_name: react-app-2
-    ports:
-      - "3000:80" # Map React app container port 80 to host port 3000
-    depends_on:
-      - backend # Ensure the backend starts before the frontend
-    networks:
-      - weather-app-network # Add service to custom network
-
 volumes:
   weather-cache-volume: # Volume for backend data persistence
 
