@@ -7,3 +7,4 @@ else
   echo "weatherCache.json file already exists."
 fi
 java -jar /app/weatherapp.jar
+
