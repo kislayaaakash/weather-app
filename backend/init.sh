@@ -6,4 +6,4 @@ if [ ! -f "$CACHE_FILE" ]; then
 else
   echo "weatherCache.json file already exists."
 fi
-java -jar /app/weatherapp.jar
+java -jar /app/weatherapp.jar 
