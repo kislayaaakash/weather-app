@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   backend:
-    image: app-be-002 # backend image
+    image: ${BACKEND_IMAGE} # Dynamically set from Jenkins pipeline
     container_name: spring-boot-app-2
     ports:
       - "8080:8080" # Map backend container port to host port 8080
