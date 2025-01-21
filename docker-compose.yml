@@ -2,9 +2,9 @@ version: "3.8"
 services:
   backend:
     image: ${BACKEND_IMAGE} # Dynamically set from Jenkins pipeline
-    container_name: spring-boot-app-2
+    container_name: spring-boot-app-01
     ports:
-      - "8080:8080" # Map backend container port to host port
+      - "8081:8081" # Map backend container port to host port
     volumes:
       - weather-cache-volume:/app
     networks:
@@ -16,6 +16,15 @@ services:
       SERVICE_ONLINE: ${SERVICE_ONLINE}
       SERVICE_CACHE_FILE_NAME: ${SERVICE_CACHE_FILE_NAME}
       SERVICE_UPDATE_BACKUP_DURATION_THRESHOLD: ${SERVICE_UPDATE_BACKUP_DURATION_THRESHOLD}
+  frontend:
+    image: ${FRONTEND_IMAGE} # frontend image (React)
+    container_name: react-app-01
+    ports:
+      - "8080:8080" # Map React app container port 80 to host port 3000
+    depends_on:
+      - backend # Ensure the backend starts before the frontend
+    networks:
+      - weather-app-network # Add service to custom network
 
 volumes:
   weather-cache-volume: # Volume for backend data persistence

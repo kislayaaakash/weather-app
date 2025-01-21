@@ -12,7 +12,7 @@ RUN echo "{}" > /app/weatherCache.json && \
     echo "Created weatherCache.json file."
 
 # Expose the application's port (e.g., 8080)
-EXPOSE 8080
+EXPOSE 8081
 
 # Start the Spring Boot application directly
 ENTRYPOINT ["java", "-jar", "/app/weatherapp.jar"]
