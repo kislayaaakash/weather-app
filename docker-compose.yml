@@ -5,7 +5,7 @@ services:
     ports:
       - "8081:8081" # Map backend container port to host port
     volumes:
-      - weather-cache-volume:/app
+      - weather-cache-volume:/app/weatherCache.json
     networks:
       - weather-app-network # Add service to custom network
     environment:
