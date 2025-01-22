@@ -60,7 +60,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'WEATHER_API_KEY', variable: 'WEATHER_API_KEY')]) {
                     powershell '''
                     # Load environment variables from the .env file inside the devops folder
-                    $env:EnvFile = "devops/.env"
+                    $env:EnvFile = ".env"
                     if (Test-Path $env:EnvFile) {
                         Get-Content $env:EnvFile | ForEach-Object {
                             $key, $value = $_ -split '='
@@ -69,10 +69,10 @@ pipeline {
                     }
 
                     # Shutdown any running Docker containers using the docker-compose.yml inside the devops folder
-                    docker-compose -f devops/docker-compose.yml down
+                    docker-compose down
 
                     # Run Docker Compose in detached mode with the environment variables set
-                    docker-compose -f devops/docker-compose.yml up -d
+                    docker-compose up -d
                     '''
                 }
             }
