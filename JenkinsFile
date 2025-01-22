@@ -13,7 +13,7 @@ pipeline {
                 script {
                     checkout([
                         $class: 'GitSCM',
-                        branches: [[name: '*/dev']],
+                        branches: [[name: '*/jenkins-dev']],
                         userRemoteConfigs: [[
                             url: 'https://github.com/kislayaaakash/weather-app.git',
                             credentialsId: 'KISLAYAAAKASH'
