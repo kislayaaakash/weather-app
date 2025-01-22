@@ -7,12 +7,14 @@ WORKDIR /app
 # Copy the Spring Boot JAR to the container
 COPY target/weather-app-be.jar /app/weatherapp.jar
 
-# Create and initialize the weatherCache.json file
-RUN echo "{}" > /app/weatherCache.json && \
-    echo "Created weatherCache.json file."
+# Copy the initialization script to the container
+COPY init.sh /app/init.sh
+
+# Make the initialization script executable
+RUN chmod +x /app/init.sh
 
 # Expose the application's port (e.g., 8080)
-EXPOSE 8081
+EXPOSE 8080
 
-# Start the Spring Boot application directly
-ENTRYPOINT ["java", "-jar", "/app/weatherapp.jar"]
+# Start the initialization script on container start
+ENTRYPOINT ["/bin/bash", "/app/init.sh"]
