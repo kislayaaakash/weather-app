@@ -1,0 +1,87 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_REGISTRY = 'kislaya-weather-app'
+        BACKEND_IMAGE = "${DOCKER_REGISTRY}/backend:${env.BUILD_ID}"
+        FRONTEND_IMAGE = "${DOCKER_REGISTRY}/frontend:${env.BUILD_ID}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: '*/dev']],
+                        userRemoteConfigs: [[
+                            url: 'https://github.com/kislayaaakash/weather-app.git',
+                            credentialsId: 'KISLAYAAAKASH'
+                        ]],
+                        poll: false
+                    ])
+                }
+            }
+        }
+
+        stage('Build Backend') {
+            steps {
+                dir('backend') {
+                    powershell '''
+                    # Build the JAR without environment variables or credentials
+                    ./mvnw clean package
+
+                    # Build backend Docker image using PowerShell
+                    docker build -t $Env:BACKEND_IMAGE .
+                    '''
+                }
+            }
+        }
+
+        stage('Build Frontend') {
+            steps {
+                dir('frontend') {
+                    powershell '''
+                    # Install npm dependencies
+                    npm install
+
+                    # Build the frontend application
+                    npm run build
+
+                    # Build the frontend Docker image locally
+                    docker build -t $Env:FRONTEND_IMAGE .
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy with Docker Compose') {
+            steps {
+                withCredentials([string(credentialsId: 'WEATHER_API_KEY', variable: 'WEATHER_API_KEY')]) {
+                    powershell '''
+                    # Load environment variables from the .env file inside the devops folder
+                    $env:EnvFile = "devops/.env"
+                    if (Test-Path $env:EnvFile) {
+                        Get-Content $env:EnvFile | ForEach-Object {
+                            $key, $value = $_ -split '='
+                            [System.Environment]::SetEnvironmentVariable($key, $value, [System.EnvironmentVariableTarget]::Process)
+                        }
+                    }
+
+                    # Shutdown any running Docker containers using the docker-compose.yml inside the devops folder
+                    docker-compose -f devops/docker-compose.yml down
+
+                    # Run Docker Compose in detached mode with the environment variables set
+                    docker-compose -f devops/docker-compose.yml up -d
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
