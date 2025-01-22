@@ -1,6 +1,6 @@
 const fetchWeatherDetails = async (city) => {
   const apiUrl =
-    process.env.REACT_APP_API_URL || "http://localhost:8080/api/v1";
+    process.env.REACT_APP_API_URL || "http://localhost:8081/api/v1";
 
   try {
     const response = await fetch(`${apiUrl}/weather/advice?city=${city}`);

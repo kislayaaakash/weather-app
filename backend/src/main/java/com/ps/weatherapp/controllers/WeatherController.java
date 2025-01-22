@@ -45,4 +45,9 @@ public class WeatherController {
                         .body(errorResponse)); // 503 Service Unavailable
             });
     }
+
+    @GetMapping("/test")
+    public String test() {
+        return "testing";
+    }
 }
