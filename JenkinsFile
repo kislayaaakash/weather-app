@@ -99,7 +99,7 @@ pipeline {
                     docker-compose down
 
                     # Run Docker Compose in detached mode with the environment variables set
-                    docker-compose up -d --no-build --no-pull
+                    docker-compose up -d --no-build
                     '''
                 }
             }
