@@ -3,15 +3,15 @@ pipeline {
 
     environment {
         DOCKER_REGISTRY = 'kislaya-weather-app'
-        BACKEND_IMAGE = "${DOCKER_REGISTRY}/backend:${env.BUILD_ID}"
-        FRONTEND_IMAGE = "${DOCKER_REGISTRY}/frontend:${env.BUILD_ID}"
+        BACKEND_IMAGE = "${DOCKER_REGISTRY}/backend:latest"
+        FRONTEND_IMAGE = "${DOCKER_REGISTRY}/frontend:latest"
     }
 
     stages {
         stage('Check for Changes') {
             steps {
                 script {
-                    // Check the changes in the last commit using PowerShell
+                    // Check for changes in the last commit using PowerShell
                     def changes = powershell(script: '''
                         $changes = git diff --name-only HEAD~1
                         return $changes
@@ -46,10 +46,14 @@ pipeline {
             steps {
                 dir('backend') {
                     powershell '''
-                    # Build the JAR without environment variables or credentials
-                    ./mvnw clean package
+                    # Stop and remove the old backend container if it exists
+                    docker ps -q -f "name=spring-boot-app-01" | ForEach-Object { docker stop $_; docker rm $_ }
 
-                    # Build backend Docker image using PowerShell
+                    # Remove the old 'latest' image before building a new one
+                    docker rmi -f $Env:BACKEND_IMAGE
+
+                    # Build the new backend image and tag it as 'latest'
+                    ./mvnw clean package
                     docker build -t $Env:BACKEND_IMAGE .
                     '''
                 }
@@ -63,13 +67,15 @@ pipeline {
             steps {
                 dir('frontend') {
                     powershell '''
-                    # Install npm dependencies
+                    # Stop and remove the old frontend container if it exists
+                    docker ps -q -f "name=react-app-01" | ForEach-Object { docker stop $_; docker rm $_ }
+
+                    # Remove the old 'latest' image before building a new one
+                    docker rmi -f $Env:FRONTEND_IMAGE
+
+                    # Build the new frontend image and tag it as 'latest'
                     npm install
-
-                    # Build the frontend application
                     npm run build
-
-                    # Build the frontend Docker image locally
                     docker build -t $Env:FRONTEND_IMAGE .
                     '''
                 }
@@ -93,8 +99,7 @@ pipeline {
                     docker-compose down
 
                     # Run Docker Compose in detached mode with the environment variables set
-                    # Use --no-build to avoid rebuilding images if no changes
-                    docker-compose up -d --no-build
+                    docker-compose up -d --no-build --no-pull
                     '''
                 }
             }
