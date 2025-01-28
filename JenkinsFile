@@ -8,22 +8,6 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                script {
-                    checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: '*/dev']],
-                        userRemoteConfigs: [[
-                            url: 'https://github.com/kislayaaakash/weather-app.git',
-                            credentialsId: 'KISLAYAAAKASH'
-                        ]],
-                        poll: false
-                    ])
-                }
-            }
-        }
-
         stage('Check for Changes') {
             steps {
                 script {
@@ -32,20 +16,20 @@ pipeline {
                         $changes = git diff --name-only HEAD~1
                         return $changes
                     ''', returnStdout: true).trim()
-        
-                    // Set environment variables based on changes detected in PowerShell
+
+                    // Set environment variables based on changes detected
                     if (changes.contains('backend/')) {
                         env.BUILD_BACKEND = 'true'
                     } else {
                         env.BUILD_BACKEND = 'false'
                     }
-        
+
                     if (changes.contains('frontend/')) {
                         env.BUILD_FRONTEND = 'true'
                     } else {
                         env.BUILD_FRONTEND = 'false'
                     }
-        
+
                     if (changes.contains('.env')) {
                         env.UPDATE_ENV = 'true'
                     } else {
@@ -57,7 +41,7 @@ pipeline {
 
         stage('Build Backend') {
             when {
-                expression { env.BUILD_BACKEND == 'true' }
+                expression { return env.BUILD_BACKEND == 'true' }
             }
             steps {
                 dir('backend') {
@@ -74,7 +58,7 @@ pipeline {
 
         stage('Build Frontend') {
             when {
-                expression { env.BUILD_FRONTEND == 'true' }
+                expression { return env.BUILD_FRONTEND == 'true' }
             }
             steps {
                 dir('frontend') {
@@ -93,9 +77,6 @@ pipeline {
         }
 
         stage('Deploy with Docker Compose') {
-            when {
-                expression { env.UPDATE_ENV == 'true' }
-            }
             steps {
                 withCredentials([string(credentialsId: 'WEATHER_API_KEY', variable: 'WEATHER_API_KEY')]) {
                     powershell '''
@@ -112,7 +93,8 @@ pipeline {
                     docker-compose down
 
                     # Run Docker Compose in detached mode with the environment variables set
-                    docker-compose up -d
+                    # Use --no-build to avoid rebuilding images if no changes
+                    docker-compose up -d --no-build
                     '''
                 }
             }
