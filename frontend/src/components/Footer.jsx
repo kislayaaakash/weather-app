@@ -24,7 +24,7 @@ const Footer = () => {
           <Row>
             <Col className="text-center">
               <p className="mb-0">
-                &copy; 2025 Kislaya Weather App. All Rights Reserved.
+                &copy; 2025 Kislaya Weather App 2. All Rights Reserved.
               </p>
             </Col>
           </Row>
