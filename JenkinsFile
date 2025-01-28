@@ -41,20 +41,22 @@ pipeline {
 
         stage('Build Backend') {
             when {
-                expression { return env.BUILD_BACKEND == 'true' }
+                expression { return env.BUILD_BACKEND == 'true' || env.BUILD_BACKEND == 'false' }  // Always build if it's a first-time setup or changes detected
             }
             steps {
                 dir('backend') {
                     powershell '''
-                    # Stop and remove the old backend container if it exists
+                    # Check if the container is running, and stop/remove it if it exists
                     docker ps -q -f "name=spring-boot-app-01" | ForEach-Object { docker stop $_; docker rm $_ }
 
-                    # Remove the old 'latest' image before building a new one
-                    docker rmi -f $Env:BACKEND_IMAGE
-
-                    # Build the new backend image and tag it as 'latest'
-                    ./mvnw clean package
-                    docker build -t $Env:BACKEND_IMAGE .
+                    # Check if the 'latest' image exists. If not, build the image.
+                    if (-not (docker images -q $Env:BACKEND_IMAGE)) {
+                        Write-Host "Backend image not found, building..."
+                        ./mvnw clean package
+                        docker build -t $Env:BACKEND_IMAGE .
+                    } else {
+                        Write-Host "Backend image already exists, skipping build."
+                    }
                     '''
                 }
             }
@@ -62,21 +64,23 @@ pipeline {
 
         stage('Build Frontend') {
             when {
-                expression { return env.BUILD_FRONTEND == 'true' }
+                expression { return env.BUILD_FRONTEND == 'true' || env.BUILD_FRONTEND == 'false' }  // Always build if it's a first-time setup or changes detected
             }
             steps {
                 dir('frontend') {
                     powershell '''
-                    # Stop and remove the old frontend container if it exists
+                    # Check if the container is running, and stop/remove it if it exists
                     docker ps -q -f "name=react-app-01" | ForEach-Object { docker stop $_; docker rm $_ }
 
-                    # Remove the old 'latest' image before building a new one
-                    docker rmi -f $Env:FRONTEND_IMAGE
-
-                    # Build the new frontend image and tag it as 'latest'
-                    npm install
-                    npm run build
-                    docker build -t $Env:FRONTEND_IMAGE .
+                    # Check if the 'latest' image exists. If not, build the image.
+                    if (-not (docker images -q $Env:FRONTEND_IMAGE)) {
+                        Write-Host "Frontend image not found, building..."
+                        npm install
+                        npm run build
+                        docker build -t $Env:FRONTEND_IMAGE .
+                    } else {
+                        Write-Host "Frontend image already exists, skipping build."
+                    }
                     '''
                 }
             }
@@ -99,7 +103,7 @@ pipeline {
                     docker-compose down
 
                     # Run Docker Compose in detached mode with the environment variables set
-                    docker-compose up -d --no-build
+                    docker-compose up -d --no-build --no-pull
                     '''
                 }
             }
