@@ -1,53 +1,141 @@
-package com.ps.weatherapp.controllers;
+pipeline {
+    agent any
 
-import com.ps.weatherapp.configurations.AppConstants;
-import com.ps.weatherapp.interfaces.ICityWeatherService;
-import com.ps.weatherapp.models.*;
-import com.ps.weatherapp.services.CityWeatherService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
-
-import java.util.LinkedHashMap;
-
-@RestController
-@RequestMapping("/api/v1/weather")
-@CrossOrigin(origins = "*")
-public class WeatherController {
-
-    private final ICityWeatherService weatherService;
-
-    public WeatherController(ICityWeatherService weatherService) {
-        this.weatherService = weatherService;
+    environment {
+        DOCKER_REGISTRY = 'kislaya-weather-app'
+        BACKEND_IMAGE = "${DOCKER_REGISTRY}/backend:latest"
+        FRONTEND_IMAGE = "${DOCKER_REGISTRY}/frontend:latest"
     }
 
-    @GetMapping("/advice")
-    public Mono<ResponseEntity<CityWeatherAdvice>> getWeatherAdvice(@RequestParam String city) {
-        return weatherService.getWeatherAdvice(city)
-            .map(cityWeatherAdvice -> {
-                // Customizing the response body and status code
-                if (cityWeatherAdvice.getStatus() == 200) {
-                    // Successful response
-                    return ResponseEntity.ok(cityWeatherAdvice); // 200 OK
-                } else {
-                    // Error response (e.g., city not found or service error)
-                    HttpStatus status = cityWeatherAdvice.getStatus() == 404 ? HttpStatus.NOT_FOUND : HttpStatus.SERVICE_UNAVAILABLE;
-                    return ResponseEntity.status(status) // 404 Not Found
-                            .body(cityWeatherAdvice);
+    stages {
+        stage('Check for Changes') {
+            steps {
+                script {
+                    // Check the changes in the last commit using PowerShell
+                    def changes = powershell(script: '''
+                        $changes = git diff --name-only HEAD~1
+                        return $changes
+                    ''', returnStdout: true).trim()
+
+                    // Set environment variables based on changes detected
+                    env.BUILD_BACKEND = changes.contains('backend/') ? 'true' : 'false'
+                    env.BUILD_FRONTEND = changes.contains('frontend/') ? 'true' : 'false'
+                    env.UPDATE_ENV = changes.contains('.env') ? 'true' : 'false'
                 }
-            })
-            .onErrorResume(error -> {
-                // Handle unexpected errors (e.g., network issues)
-                CityWeatherAdvice errorResponse = new CityWeatherAdvice(
-                        AppConstants.SERVICE_TEMPORARILY_UNAVAILABLE, new LinkedHashMap<>(), 503);
-                return Mono.just(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                        .body(errorResponse)); // 503 Service Unavailable
-            });
+            }
+        }
+
+        stage('Build Backend') {
+            steps {
+                script {
+                    // Build the backend image if necessary (either the image doesn't exist or changes detected)
+                    def backendImageExists = powershell(script: '''
+                        $image = docker images -q $Env:BACKEND_IMAGE
+                        if ($image) {
+                            return $true
+                        } else {
+                            return $false
+                        }
+                    ''', returnStdout: true).trim()
+
+                    if (backendImageExists == 'false' || $env.BUILD_BACKEND == 'true') {
+                        echo "Building backend image..."
+                        dir('backend') {
+                            // Run the backend build steps
+                            powershell '''
+                            ./mvnw clean package
+                            docker build -t $Env:BACKEND_IMAGE .
+                            '''
+                        }
+                    } else {
+                        echo "Skipping backend build, no changes detected."
+                    }
+                }
+            }
+        }
+
+        stage('Build Frontend') {
+            steps {
+                script {
+                    // Build the frontend image if necessary (either the image doesn't exist or changes detected)
+                    def frontendImageExists = powershell(script: '''
+                        $image = docker images -q $Env:FRONTEND_IMAGE
+                        if ($image) {
+                            return $true
+                        } else {
+                            return $false
+                        }
+                    ''', returnStdout: true).trim()
+
+                    if (frontendImageExists == 'false' || $env.BUILD_FRONTEND == 'true') {
+                        echo "Building frontend image..."
+                        dir('frontend') {
+                            // Run the frontend build steps
+                            powershell '''
+                            npm install
+                            npm run build
+                            docker build -t $Env:FRONTEND_IMAGE .
+                            '''
+                        }
+                    } else {
+                        echo "Skipping frontend build, no changes detected."
+                    }
+                }
+            }
+        }
+
+        stage('Stop and Remove Running Containers') {
+            steps {
+                script {
+                    // Stop and remove the existing backend container if it's running
+                    if (docker ps -q -f "name=spring-boot-app-01") {
+                        echo "Stopping and removing the existing backend container..."
+                        powershell '''
+                        docker stop spring-boot-app-01
+                        docker rm spring-boot-app-01
+                        '''
+                    }
+                    
+                    // Stop and remove the existing frontend container if it's running
+                    if (docker ps -q -f "name=react-app-01") {
+                        echo "Stopping and removing the existing frontend container..."
+                        powershell '''
+                        docker stop react-app-01
+                        docker rm react-app-01
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Deploy with Docker Compose') {
+            steps {
+                withCredentials([string(credentialsId: 'WEATHER_API_KEY', variable: 'WEATHER_API_KEY')]) {
+                    powershell '''
+                    # Load environment variables from the .env file inside the devops folder
+                    $env:EnvFile = ".env"
+                    if (Test-Path $env:EnvFile) {
+                        Get-Content $env:EnvFile | ForEach-Object {
+                            $key, $value = $_ -split '='
+                            [System.Environment]::SetEnvironmentVariable($key, $value, [System.EnvironmentVariableTarget]::Process)
+                        }
+                    }
+
+                    # Shutdown any running Docker containers using the docker-compose.yml inside the devops folder
+                    docker-compose down
+
+                    # Run Docker Compose in detached mode with the environment variables set
+                    # Use --no-build to avoid rebuilding images if no changes
+                    docker-compose up -d --no-build
+                    '''
+                }
+            }
+        }
     }
 
-    @GetMapping("/test")
-    public String test() {
-        return "testing 3";
+    post {
+        always {
+            cleanWs()
+        }
     }
 }
