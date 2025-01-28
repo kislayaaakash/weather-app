@@ -27,11 +27,17 @@ pipeline {
         stage('Check for Changes') {
             steps {
                 script {
-                    // Check if the .env file or backend/frontend source code has changed
-                    def changes = sh(script: "git diff --name-only HEAD~1", returnStdout: true).trim()
-                    env.BUILD_BACKEND = changes.contains('backend/') ? 'true' : 'false'
-                    env.BUILD_FRONTEND = changes.contains('frontend/') ? 'true' : 'false'
-                    env.UPDATE_ENV = changes.contains('.env') ? 'true' : 'false'
+                    // Check if the .env file or backend/frontend source code has changed using PowerShell
+                    def changes = powershell(script: '''
+                        # Check the changes in the last commit
+                        $changes = git diff --name-only HEAD~1
+                        return $changes
+                    ''', returnStdout: true).trim()
+
+                    // Set environment variables based on the changes detected
+                    env.BUILD_BACKEND = $changes -contains 'backend/' ? 'true' : 'false'
+                    env.BUILD_FRONTEND = $changes -contains 'frontend/' ? 'true' : 'false'
+                    env.UPDATE_ENV = $changes -contains '.env' ? 'true' : 'false'
                 }
             }
         }
@@ -43,7 +49,10 @@ pipeline {
             steps {
                 dir('backend') {
                     powershell '''
+                    # Build the JAR without environment variables or credentials
                     ./mvnw clean package
+
+                    # Build backend Docker image using PowerShell
                     docker build -t $Env:BACKEND_IMAGE .
                     '''
                 }
@@ -57,8 +66,13 @@ pipeline {
             steps {
                 dir('frontend') {
                     powershell '''
+                    # Install npm dependencies
                     npm install
+
+                    # Build the frontend application
                     npm run build
+
+                    # Build the frontend Docker image locally
                     docker build -t $Env:FRONTEND_IMAGE .
                     '''
                 }
@@ -72,7 +86,19 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'WEATHER_API_KEY', variable: 'WEATHER_API_KEY')]) {
                     powershell '''
+                    # Load environment variables from the .env file inside the devops folder
+                    $env:EnvFile = ".env"
+                    if (Test-Path $env:EnvFile) {
+                        Get-Content $env:EnvFile | ForEach-Object {
+                            $key, $value = $_ -split '='
+                            [System.Environment]::SetEnvironmentVariable($key, $value, [System.EnvironmentVariableTarget]::Process)
+                        }
+                    }
+
+                    # Shutdown any running Docker containers using the docker-compose.yml inside the devops folder
                     docker-compose down
+
+                    # Run Docker Compose in detached mode with the environment variables set
                     docker-compose up -d
                     '''
                 }
