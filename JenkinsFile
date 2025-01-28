@@ -39,48 +39,6 @@ pipeline {
             }
         }
 
-        stage('Stop and Remove Running Containers') {
-            steps {
-                script {
-                    // Stop and remove the existing backend container if it's running
-                    def backendContainerRunning = powershell(script: '''
-                        $containerId = docker ps -q -f "name=spring-boot-app-01"
-                        if ($containerId) {
-                            return $true
-                        } else {
-                            return $false
-                        }
-                    ''', returnStdout: true).trim()
-
-                    if (backendContainerRunning == 'true') {
-                        echo "Stopping and removing the existing backend container..."
-                        powershell '''
-                        docker stop spring-boot-app-01
-                        docker rm spring-boot-app-01
-                        '''
-                    }
-
-                    // Stop and remove the existing frontend container if it's running
-                    def frontendContainerRunning = powershell(script: '''
-                        $containerId = docker ps -q -f "name=react-app-01"
-                        if ($containerId) {
-                            return $true
-                        } else {
-                            return $false
-                        }
-                    ''', returnStdout: true).trim()
-
-                    if (frontendContainerRunning == 'true') {
-                        echo "Stopping and removing the existing frontend container..."
-                        powershell '''
-                        docker stop react-app-01
-                        docker rm react-app-01
-                        '''
-                    }
-                }
-            }
-        }
-
         stage('Build Backend') {
             when {
                 expression { return env.BUILD_BACKEND == 'true' }
@@ -104,7 +62,7 @@ pipeline {
                             ./mvnw clean package
 
                             # Build backend Docker image using PowerShell
-                            docker build -t $Env:BACKEND_IMAGE .
+                            docker build -t $Env:BACKEND_IMAGE . 
                             '''
                         }
                     }
@@ -138,7 +96,7 @@ pipeline {
                             npm run build
 
                             # Build the frontend Docker image locally
-                            docker build -t $Env:FRONTEND_IMAGE .
+                            docker build -t $Env:FRONTEND_IMAGE . 
                             '''
                         }
                     }
@@ -163,8 +121,8 @@ pipeline {
                     docker-compose down
 
                     # Run Docker Compose in detached mode with the environment variables set
-                    # Use --no-build to avoid rebuilding images if no changes
-                    docker-compose up -d --no-build
+                    # This will start the containers using the updated images
+                    docker-compose up -d
                     '''
                 }
             }
