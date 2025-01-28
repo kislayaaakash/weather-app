@@ -48,7 +48,7 @@ pipeline {
                             '''
                         }
                     } else {
-                        echo "Skipping backend build, no changes detected."
+                        echo "Skipping backend build, no change detected."
                     }
                 }
             }
