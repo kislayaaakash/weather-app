@@ -29,7 +29,16 @@ pipeline {
             steps {
                 script {
                     // Build the backend image if necessary (either the image doesn't exist or changes detected)
-                    if (-not (docker images -q $Env:BACKEND_IMAGE) -or $env.BUILD_BACKEND == 'true') {
+                    def backendImageExists = powershell(script: '''
+                        $image = docker images -q $Env:BACKEND_IMAGE
+                        if ($image) {
+                            return $true
+                        } else {
+                            return $false
+                        }
+                    ''', returnStdout: true).trim()
+
+                    if (backendImageExists == 'false' || $env.BUILD_BACKEND == 'true') {
                         echo "Building backend image..."
                         dir('backend') {
                             // Run the backend build steps
@@ -39,7 +48,7 @@ pipeline {
                             '''
                         }
                     } else {
-                        echo "Skipping backend build, no changes detected."
+                        echo "Skipping backend build, no change detected."
                     }
                 }
             }
@@ -49,7 +58,16 @@ pipeline {
             steps {
                 script {
                     // Build the frontend image if necessary (either the image doesn't exist or changes detected)
-                    if (-not (docker images -q $Env:FRONTEND_IMAGE) -or $env.BUILD_FRONTEND == 'true') {
+                    def frontendImageExists = powershell(script: '''
+                        $image = docker images -q $Env:FRONTEND_IMAGE
+                        if ($image) {
+                            return $true
+                        } else {
+                            return $false
+                        }
+                    ''', returnStdout: true).trim()
+
+                    if (frontendImageExists == 'false' || $env.BUILD_FRONTEND == 'true') {
                         echo "Building frontend image..."
                         dir('frontend') {
                             // Run the frontend build steps
