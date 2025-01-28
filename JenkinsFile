@@ -88,7 +88,16 @@ pipeline {
             steps {
                 dir('backend') {
                     script {
-                        if (-not (docker images -q $Env:BACKEND_IMAGE) -or $env.BUILD_BACKEND == 'true') {
+                        def backendImageExists = powershell(script: '''
+                            $image = docker images -q $Env:BACKEND_IMAGE
+                            if ($image) {
+                                return $true
+                            } else {
+                                return $false
+                            }
+                        ''', returnStdout: true).trim()
+
+                        if (backendImageExists == 'false' || env.BUILD_BACKEND == 'true') {
                             echo "Building Backend Docker image..."
                             powershell '''
                             # Build the JAR without environment variables or credentials
@@ -110,7 +119,16 @@ pipeline {
             steps {
                 dir('frontend') {
                     script {
-                        if (-not (docker images -q $Env:FRONTEND_IMAGE) -or $env.BUILD_FRONTEND == 'true') {
+                        def frontendImageExists = powershell(script: '''
+                            $image = docker images -q $Env:FRONTEND_IMAGE
+                            if ($image) {
+                                return $true
+                            } else {
+                                return $false
+                            }
+                        ''', returnStdout: true).trim()
+
+                        if (frontendImageExists == 'false' || env.BUILD_FRONTEND == 'true') {
                             echo "Building Frontend Docker image..."
                             powershell '''
                             # Install npm dependencies
