@@ -48,6 +48,6 @@ public class WeatherController {
 
     @GetMapping("/test")
     public String test() {
-        return "testing 5";
+        return "testing 6";
     }
 }
