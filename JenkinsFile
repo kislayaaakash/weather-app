@@ -18,67 +18,22 @@ pipeline {
                     ''', returnStdout: true).trim()
 
                     // Set environment variables based on changes detected
-                    env.BUILD_BACKEND = changes.contains('backend/') ? 'true' : 'false'
-                    env.BUILD_FRONTEND = changes.contains('frontend/') ? 'true' : 'false'
-                    env.UPDATE_ENV = changes.contains('.env') ? 'true' : 'false'
-                }
-            }
-        }
-
-        stage('Build Backend') {
-            steps {
-                script {
-                    // Build the backend image if necessary (either the image doesn't exist or changes detected)
-                    def backendImageExists = powershell(script: '''
-                        $image = docker images -q $Env:BACKEND_IMAGE
-                        if ($image) {
-                            return $true
-                        } else {
-                            return $false
-                        }
-                    ''', returnStdout: true).trim()
-
-                    if (backendImageExists == 'false' || $env.BUILD_BACKEND == 'true') {
-                        echo "Building backend image..."
-                        dir('backend') {
-                            // Run the backend build steps
-                            powershell '''
-                            ./mvnw clean package
-                            docker build -t $Env:BACKEND_IMAGE .
-                            '''
-                        }
+                    if (changes.contains('backend/')) {
+                        env.BUILD_BACKEND = 'true'
                     } else {
-                        echo "Skipping backend build, no change detected."
+                        env.BUILD_BACKEND = 'false'
                     }
-                }
-            }
-        }
 
-        stage('Build Frontend') {
-            steps {
-                script {
-                    // Build the frontend image if necessary (either the image doesn't exist or changes detected)
-                    def frontendImageExists = powershell(script: '''
-                        $image = docker images -q $Env:FRONTEND_IMAGE
-                        if ($image) {
-                            return $true
-                        } else {
-                            return $false
-                        }
-                    ''', returnStdout: true).trim()
-
-                    if (frontendImageExists == 'false' || $env.BUILD_FRONTEND == 'true') {
-                        echo "Building frontend image..."
-                        dir('frontend') {
-                            // Run the frontend build steps
-                            powershell '''
-                            npm install
-                            npm run build
-                            docker build -t $Env:FRONTEND_IMAGE .
-                            '''
-                        }
+                    if (changes.contains('frontend/')) {
+                        env.BUILD_FRONTEND = 'true'
                     } else {
-                        echo "Skipping frontend build, no changes detected."
+                        env.BUILD_FRONTEND = 'false'
+                    }
+
+                    if (changes.contains('.env')) {
+                        env.UPDATE_ENV = 'true'
+                    } else {
+                        env.UPDATE_ENV = 'false'
                     }
                 }
             }
@@ -88,21 +43,86 @@ pipeline {
             steps {
                 script {
                     // Stop and remove the existing backend container if it's running
-                    if (docker ps -q -f "name=spring-boot-app-01") {
+                    def backendContainerRunning = powershell(script: '''
+                        $containerId = docker ps -q -f "name=spring-boot-app-01"
+                        if ($containerId) {
+                            return $true
+                        } else {
+                            return $false
+                        }
+                    ''', returnStdout: true).trim()
+
+                    if (backendContainerRunning == 'true') {
                         echo "Stopping and removing the existing backend container..."
                         powershell '''
                         docker stop spring-boot-app-01
                         docker rm spring-boot-app-01
                         '''
                     }
-                    
+
                     // Stop and remove the existing frontend container if it's running
-                    if (docker ps -q -f "name=react-app-01") {
+                    def frontendContainerRunning = powershell(script: '''
+                        $containerId = docker ps -q -f "name=react-app-01"
+                        if ($containerId) {
+                            return $true
+                        } else {
+                            return $false
+                        }
+                    ''', returnStdout: true).trim()
+
+                    if (frontendContainerRunning == 'true') {
                         echo "Stopping and removing the existing frontend container..."
                         powershell '''
                         docker stop react-app-01
                         docker rm react-app-01
                         '''
+                    }
+                }
+            }
+        }
+
+        stage('Build Backend') {
+            when {
+                expression { return env.BUILD_BACKEND == 'true' }
+            }
+            steps {
+                dir('backend') {
+                    script {
+                        if (-not (docker images -q $Env:BACKEND_IMAGE) -or $env.BUILD_BACKEND == 'true') {
+                            echo "Building Backend Docker image..."
+                            powershell '''
+                            # Build the JAR without environment variables or credentials
+                            ./mvnw clean package
+
+                            # Build backend Docker image using PowerShell
+                            docker build -t $Env:BACKEND_IMAGE .
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build Frontend') {
+            when {
+                expression { return env.BUILD_FRONTEND == 'true' }
+            }
+            steps {
+                dir('frontend') {
+                    script {
+                        if (-not (docker images -q $Env:FRONTEND_IMAGE) -or $env.BUILD_FRONTEND == 'true') {
+                            echo "Building Frontend Docker image..."
+                            powershell '''
+                            # Install npm dependencies
+                            npm install
+
+                            # Build the frontend application
+                            npm run build
+
+                            # Build the frontend Docker image locally
+                            docker build -t $Env:FRONTEND_IMAGE .
+                            '''
+                        }
                     }
                 }
             }
