@@ -27,17 +27,30 @@ pipeline {
         stage('Check for Changes') {
             steps {
                 script {
-                    // Check if the .env file or backend/frontend source code has changed using PowerShell
+                    // Check the changes in the last commit using PowerShell
                     def changes = powershell(script: '''
-                        # Check the changes in the last commit
                         $changes = git diff --name-only HEAD~1
                         return $changes
                     ''', returnStdout: true).trim()
-
-                    // Set environment variables based on the changes detected
-                    env.BUILD_BACKEND = $changes -contains 'backend/' ? 'true' : 'false'
-                    env.BUILD_FRONTEND = $changes -contains 'frontend/' ? 'true' : 'false'
-                    env.UPDATE_ENV = $changes -contains '.env' ? 'true' : 'false'
+        
+                    // Set environment variables based on changes detected in PowerShell
+                    if (changes.contains('backend/')) {
+                        env.BUILD_BACKEND = 'true'
+                    } else {
+                        env.BUILD_BACKEND = 'false'
+                    }
+        
+                    if (changes.contains('frontend/')) {
+                        env.BUILD_FRONTEND = 'true'
+                    } else {
+                        env.BUILD_FRONTEND = 'false'
+                    }
+        
+                    if (changes.contains('.env')) {
+                        env.UPDATE_ENV = 'true'
+                    } else {
+                        env.UPDATE_ENV = 'false'
+                    }
                 }
             }
         }
