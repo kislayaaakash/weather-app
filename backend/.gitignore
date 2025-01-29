@@ -34,3 +34,6 @@ build/
 
 # Environment file (Sensitive Data)
 .env
+
+# Ignore weathercache.json
+weatherCache.json
