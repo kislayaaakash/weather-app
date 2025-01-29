@@ -76,7 +76,7 @@ public class FileManager<T> {
                 String json = new String(Files.readAllBytes(Paths.get(fileName)));
                 return deserializeData(json, typeReference);
             } else {
-                logger.error("BackUp file not found.");
+                logger.warn("BackUp file not found.");
                 return new LinkedHashMap<>();
             }
         } catch (IOException e) {
