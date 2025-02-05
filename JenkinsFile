@@ -68,7 +68,7 @@ pipeline {
                         }
                     }
 
-                    # Shutdown any running Docker containers using the docker-compose.yml inside the devops folder
+                    # Shutdown any running Docker containers using the docker-compose.yml
                     docker-compose down
 
                     # Run Docker Compose in detached mode with the environment variables set
