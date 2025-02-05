@@ -59,7 +59,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'WEATHER_API_KEY', variable: 'WEATHER_API_KEY')]) {
                     powershell '''
-                    # Load environment variables from the .env file inside the devops folder
+                    # Load environment variables from the .env file
                     $env:EnvFile = ".env"
                     if (Test-Path $env:EnvFile) {
                         Get-Content $env:EnvFile | ForEach-Object {
