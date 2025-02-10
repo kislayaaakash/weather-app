@@ -15,7 +15,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -31,6 +33,7 @@ public class CityWeatherService implements ICityWeatherService {
     private final Map<String, CityWeatherDetails> weatherBackUpData;
     private static final Logger logger = LoggerFactory.getLogger(CityWeatherService.class);
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DecimalFormat decimalFormat = new DecimalFormat("#.##");
 
     @Value("${weather.api.key}")
     private String apiKey;
@@ -86,20 +89,17 @@ public class CityWeatherService implements ICityWeatherService {
         Map<String, Object> queryParams = createQueryParams(city);
 
         return apiManager.fetchData(serviceType, queryParams, CityWeatherDetails.class)
-            .flatMap(cityWeatherDetails ->
-                Mono.just(cityWeatherDetails)
-                    .doOnNext((details) -> {
-                        if(cityWeatherDetails.getCod().equals("200")) {
-                            if (weatherBackUpData.get(city) != null) {
-                                setLatestCityWeatherDetailsAndUpdateBackUp(city, cityWeatherDetails);
-                            }
-                            else {
-                                updateCityWeatherBackUp(city, cityWeatherDetails);
-                            }
+            .doOnNext(cityWeatherDetails -> {
+                if ("200".equals(cityWeatherDetails.getCod())) {
+                    Mono.fromRunnable(() -> {
+                        if (weatherBackUpData.get(city) != null) {
+                            setLatestCityWeatherDetailsAndUpdateBackUp(city, cityWeatherDetails);
+                        } else {
+                            updateCityWeatherBackUp(city, cityWeatherDetails);
                         }
-                    }
-                )
-            )
+                    }).subscribeOn(Schedulers.boundedElastic()).subscribe();
+                }
+            })
             .onErrorResume(error -> {
                 logger.error(AppConstants.ERROR_MESSAGE_CITY_WEATHER_GET, city, error.getMessage());
                 return Mono.just(new CityWeatherDetails(AppConstants.SERVICE_TEMPORARILY_UNAVAILABLE, Collections.emptyList(), "503"));
@@ -169,7 +169,7 @@ public class CityWeatherService implements ICityWeatherService {
             prediction.setTime(cityTime);
 
             // Convert the temperature from Kelvin to Celsius and round to the nearest integer
-            double tempCelsius = Math.round(weatherDetails.getMain().getTemp() - 273.15);
+            double tempCelsius = Double.parseDouble(decimalFormat.format(weatherDetails.getMain().getTemp() - 273.15));
             prediction.setTemperature(tempCelsius);
 
             // Create a list to store weather status (e.g., description and main weather type)

@@ -26,8 +26,8 @@ public class FileManager<T> {
     @Value("${service.cacheFileName}")
     private String filePath;
 
-    public FileManager() {
-        this.objectMapper = new ObjectMapper();
+    public FileManager(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
     }
 
     // Serialize the cache to a JSON string
