@@ -1,6 +1,8 @@
 package com.ps.weatherapp.configurations;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ps.weatherapp.models.CityWeatherDetails;
 import com.ps.weatherapp.utilities.FileManager;
 import org.modelmapper.ModelMapper;
@@ -19,6 +21,11 @@ public class AppConfig {
     @Bean
     public WebClient webClient(WebClient.Builder builder) {
         return builder.baseUrl(AppConstants.WEATHER_API_BASE_URL).build();
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     @Bean
