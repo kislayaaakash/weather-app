@@ -277,5 +277,5 @@ The CI/CD pipeline for the Weather App ensures secure, automated deployment of b
    - Unit tests for both the frontend and backend are executed within their respective Docker containers.
 
 5. **Deployment:**
-   - Use Docker Compose to deploy both the frontend and backend containers:
+   - Use Docker Compose to deploy both the frontend and backend containers.
 ---
